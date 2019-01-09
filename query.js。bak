@@ -1,0 +1,71 @@
+var query_by_innerText = function(elems,innerText){
+/*
+筛选出innerText值 == innerText的elem列表
+*/
+  var include_innerText_elems_list = []
+  //找包含文本的元素
+  for(var i=0;i<elems.length;i++){
+      elems_innerText = elems[i].innerText.replace(/(^\s*)|(\s*$)/g,"") // 去除elem字符串前后的空格
+      if (elems_innerText == innerText){
+        include_innerText_elems_list.push(elems[i])
+      }
+  }
+  return include_innerText_elems_list
+}
+
+var get_top_elems = function(elems_list){
+/*
+从参数elems_list筛选出位于页面元素最高层的新elems列表
+1. 使用getBoundingClientRect 得到elem的坐标
+2. 使用elementsFromPoint得到位于该坐标的所有元素 =〉 (由上层到最下层排列)div.form-group, form#form_login, div.loginContent, div.login, div.globalBg, body, html
+3. 由该坐标位置最上层的可见元素与elem对比，如果最上层的可见元素是elem自身或者elem的子元素,则该元素位于最上层，如果是遮罩层(显然不是子元素)返回false
+*/
+  //判断元素是否为最高层元素
+  var isTop = function(elem){
+      var rect = elem.getBoundingClientRect()
+      x = rect.left + (rect.right - rect.left)/2
+      y = rect.top + (rect.bottom - rect.top)/2
+      top_elem = document.elementsFromPoint(x,y)[0]
+
+      // return elem.contains(top_elem)
+      return elem == top_elem
+  }
+  // get top elem list
+  var new_elems = []
+  for(var i = 0;i<elems_list.length;i++){
+      if(isTop(elems_list[i])){
+          new_elems.push(elems_list[i])
+      }
+  }
+  return new_elems
+}
+
+
+var query_by_placeholder = function(elems,innerText){
+  include_innerText_elems_list = []
+  for(var i=0;i<elems.length;i++){
+    if(elems[i].placeholder == innerText){include_innerText_elems_list.push(elems[i])}
+  }
+  console.log('query_by_placeholder:',include_innerText_elems_list)
+  return include_innerText_elems_list
+}
+
+const query_input = function(elems,innerText){
+    elem_list = query_by_placeholder(elems,innerText)
+    if(elem_list){
+        return elem_list
+    }
+    include_innerText_elems_list = []
+
+
+}
+
+var query = function(action_type,innerText){
+    if(action_type == 'click'){elems = document.querySelectorAll('*');elems = query_by_innerText(elems,innerText);}
+    if(action_type == 'input'){elems = [...document.querySelectorAll('input[type="text"]'),...document.querySelectorAll('input[type="password"]')];elems = query_input(elems,innerText)}
+    if(action_type == 'select'){elems = document.querySelectorAll('select');elems = query_input(elems,innerText)}
+
+    elems = get_top_elems(elems)
+    console.log('query:',elems)
+    return elems
+}
